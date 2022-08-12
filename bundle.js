@@ -7675,101 +7675,42 @@
 	}
 	});
 
-	const FLOORS = 7;
-	const FLOOR_HEIGHT = 120;
+	const SIZE = 9;
+	const CELL_SIZE = 50;
 
-	const offset = 20;
-	const width = 360;
+	function Board() {
+	  const cells = [];
 
-	function Pulleys({
-	  floor
-	}) {
-	  const leftCenter = offset * 2.5 + width / 4;
-	  return /*#__PURE__*/react.createElement("g", null, /*#__PURE__*/react.createElement("circle", {
-	    cx: leftCenter,
-	    cy: offset / 2,
-	    r: offset / 2,
-	    className: "pulley"
-	  }), /*#__PURE__*/react.createElement("rect", {
-	    className: "cable",
-	    x: leftCenter - offset / 2 - 1,
-	    y: offset / 2,
-	    width: "2",
-	    height: floor * FLOOR_HEIGHT + offset / 2
-	  }), /*#__PURE__*/react.createElement("circle", {
-	    cx: width - offset * 1.5,
-	    cy: offset / 2,
-	    r: offset / 2,
-	    className: "pulley"
-	  }), /*#__PURE__*/react.createElement("rect", {
-	    className: "cable",
-	    x: width - offset - 1,
-	    y: offset / 2,
-	    width: "2",
-	    height: (FLOORS - floor - 1) * FLOOR_HEIGHT + offset / 2
-	  }), /*#__PURE__*/react.createElement("rect", {
-	    className: "counterweight",
-	    x: width - offset * 1.5,
-	    y: (FLOORS - floor - 1) * FLOOR_HEIGHT + offset,
-	    width: offset,
-	    height: FLOOR_HEIGHT
-	  }));
+	  for (let i = 0; i < SIZE; i++) {
+	    for (let j = 0; j < SIZE; j++) {
+	      cells.push( /*#__PURE__*/react.createElement("rect", {
+	        className: "cell",
+	        key: `cell ${i}-${j}`,
+	        x: j * CELL_SIZE + 1,
+	        y: i * CELL_SIZE + 1,
+	        width: CELL_SIZE,
+	        height: CELL_SIZE
+	      }));
+	    }
+	  }
+
+	  return cells;
 	}
 
-	function Labels() {
-	  return new Array(FLOORS).fill(0).map((_, floor) => /*#__PURE__*/react.createElement("text", {
-	    key: `label-${floor}`,
-	    textAnchor: "middle",
-	    x: offset,
-	    y: floor * FLOOR_HEIGHT + FLOOR_HEIGHT / 2 + offset
-	  }, FLOORS - floor));
+	function Pieces() {
+	  // TODO: infer placed pieces from context
+	  return cells;
 	}
 
-	function Elevator({
-	  floor
-	}) {
-	  return /*#__PURE__*/react.createElement("svg", {
-	    width: width,
-	    height: FLOORS * FLOOR_HEIGHT + offset * 2
-	  }, /*#__PURE__*/react.createElement("rect", {
-	    className: "background",
-	    width: width,
-	    height: FLOORS * FLOOR_HEIGHT + offset * 2
-	  }), /*#__PURE__*/react.createElement("rect", {
-	    className: "carriage",
-	    x: offset * 2,
-	    y: floor * FLOOR_HEIGHT + offset,
-	    width: width / 2,
-	    height: FLOOR_HEIGHT
-	  }), /*#__PURE__*/react.createElement(Labels, null), /*#__PURE__*/react.createElement(Pulleys, {
-	    floor: floor
-	  }));
-	}
-
-	function Buttons({
-	  setFloor
-	}) {
-	  return new Array(FLOORS).fill(0).map((_, i) => {
-	    return /*#__PURE__*/react.createElement("button", {
-	      onClick: () => setFloor(i),
-	      key: i,
-	      href: "#",
-	      role: "button"
-	    }, FLOORS - i);
-	  });
+	function Stats() {
+	  return null;
 	}
 
 	function App() {
-	  const [floor, setFloor] = react.useState(FLOORS - 1);
-	  return /*#__PURE__*/react.createElement("div", {
-	    className: "grid"
-	  }, /*#__PURE__*/react.createElement("div", null, /*#__PURE__*/react.createElement(Elevator, {
-	    floor: floor
-	  })), /*#__PURE__*/react.createElement("div", {
-	    className: "grid-fluid"
-	  }, /*#__PURE__*/react.createElement(Buttons, {
-	    setFloor: setFloor
-	  })));
+	  const dimension = SIZE * CELL_SIZE + 2;
+	  return /*#__PURE__*/react.createElement("svg", {
+	    viewBox: `0 0 ${dimension} ${dimension}`
+	  }, /*#__PURE__*/react.createElement(Board, null), /*#__PURE__*/react.createElement(Pieces, null), /*#__PURE__*/react.createElement(Stats, null));
 	}
 
 	reactDom.render( /*#__PURE__*/react.createElement(App, null), document.querySelector('#root'));
