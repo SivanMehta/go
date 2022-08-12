@@ -1,8 +1,8 @@
 Simulating the game of [Go]. Also help from [rollup] and [pico]
 
 - [x] bootstrap with elevator repo
-- [ ] the board
-- [ ] the board with alternating stone placement
+- [x] the board
+- [x] the board with alternating stone placement
 - [ ] scoring
 - [ ] playing against a random opponent
 
