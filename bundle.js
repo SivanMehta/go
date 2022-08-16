@@ -7675,15 +7675,106 @@
 	}
 	});
 
-	const SIZE = 9;
-	const CELL_SIZE = 50;
+	const SIZE = 5;
+	const CELL_SIZE = 50; // memoize the falsey values of canPlace because pieces
+	// cannot be un-placed, so it will always be illegal to go there
+
+	const seen = {}; // check if a piece can be placed at a given location
+
+	function canBePlaced(state, row, col) {
+	  if (state.over) return false;
+	  if ([row, col] in seen) return false;
+	  let placed = false;
+
+	  for (let i = 0; i < state.turns.length; i++) {
+	    if (state.turns[i].row === row && state.turns[i].col === col) {
+	      placed = true;
+	      break;
+	    }
+	  }
+
+	  if (placed) {
+	    seen[[row, col]] = true;
+	  }
+
+	  return !placed;
+	}
+	function toggleTurn(color) {
+	  if (color === 'black') {
+	    return 'white';
+	  } else {
+	    return 'black';
+	  }
+	} // given the state of the go board, calculate the score
+
+	function calculateScore({
+	  state
+	}) {
+	  // empty squares
+	  // calculate the number of stones
+	  return {
+	    black: 5,
+	    white: 5
+	  };
+	} // adds a given piece to the board given the current state
+	// returns a new state
+	// will rearrange board for captures
+	// this will assume that canBePlaced has already been evaluated on the given setup
+
+	function addToBoard(state, row, col) {
+	  state.turns[row][col] = state.player;
+	  return state.turns;
+	}
+
+	let turns = new Array(SIZE);
+
+	for (let i = 0; i < SIZE; i++) {
+	  turns[i] = new Array(SIZE);
+	}
+
+	const baseGame = {
+	  player: 'black',
+	  passed: false,
+	  over: false,
+	  turns
+	};
+	const Game = /*#__PURE__*/react.createContext(baseGame);
+	const useGame = () => react.useContext(Game);
+	function Wrapper({
+	  children
+	}) {
+	  const [state, set] = react.useState(baseGame);
+
+	  function setState(change) {
+	    set({ ...state,
+	      ...change
+	    });
+	  }
+
+	  console.log(state);
+	  return /*#__PURE__*/react.createElement(Game.Provider, {
+	    value: [state, setState]
+	  }, children);
+	}
 
 	function Board() {
+	  const [state, setState] = useGame();
 	  const cells = [];
 
 	  for (let i = 0; i < SIZE; i++) {
 	    for (let j = 0; j < SIZE; j++) {
+	      function onClick() {
+	        if (canBePlaced(state, i, j)) {
+	          setState({
+	            turns: addToBoard(state, i, j),
+	            player: toggleTurn(state.player),
+	            passed: false
+	          });
+	        }
+	      }
+
 	      cells.push( /*#__PURE__*/react.createElement("rect", {
+	        onClick: onClick,
 	        className: "cell",
 	        key: `cell ${i}-${j}`,
 	        x: j * CELL_SIZE + 1,
@@ -7698,19 +7789,72 @@
 	}
 
 	function Pieces() {
-	  // TODO: infer placed pieces from context
-	  return cells;
+	  const [state] = useGame();
+	  const pieces = [];
+
+	  for (let i = 0; i < SIZE; i++) {
+	    for (let j = 0; j < SIZE; j++) {
+	      if (state.turns[i][j]) {
+	        const player = state.turns[i][j];
+	        pieces.push( /*#__PURE__*/react.createElement("circle", {
+	          key: `piece ${i}-${j}`,
+	          className: `piece ${player}`,
+	          cx: j * CELL_SIZE + CELL_SIZE / 2,
+	          cy: i * CELL_SIZE + CELL_SIZE / 2,
+	          r: CELL_SIZE * .4
+	        }));
+	      }
+	    }
+	  }
+
+	  return pieces;
+	}
+
+	function formatPlayer({
+	  player
+	}) {
+	  return /*#__PURE__*/react.createElement("div", null, "Current Player: ", player.toUpperCase());
+	}
+
+	function formatScore(state) {
+	  const score = calculateScore(state);
+	  return /*#__PURE__*/react.createElement("div", null, "Final Score:", /*#__PURE__*/react.createElement("p", null, "Black: ", score.black), /*#__PURE__*/react.createElement("p", null, "White: ", score.white));
 	}
 
 	function Stats() {
-	  return null;
+	  const [state] = useGame();
+	  let message;
+
+	  if (state.over) {
+	    message = formatScore(state);
+	  } else {
+	    message = formatPlayer(state);
+	  }
+
+	  return /*#__PURE__*/react.createElement("div", null, message, /*#__PURE__*/react.createElement("pre", null, JSON.stringify(state, null, 2)));
+	}
+
+	function Buttons() {
+	  const [state, setState] = useGame();
+
+	  function onClick() {
+	    setState({
+	      player: toggleTurn(state.player),
+	      passed: true,
+	      over: state.passed
+	    });
+	  }
+
+	  return /*#__PURE__*/react.createElement("div", null, /*#__PURE__*/react.createElement("button", {
+	    onClick: onClick
+	  }, "Pass"));
 	}
 
 	function App() {
 	  const dimension = SIZE * CELL_SIZE + 2;
-	  return /*#__PURE__*/react.createElement("svg", {
+	  return /*#__PURE__*/react.createElement(Wrapper, null, /*#__PURE__*/react.createElement("svg", {
 	    viewBox: `0 0 ${dimension} ${dimension}`
-	  }, /*#__PURE__*/react.createElement(Board, null), /*#__PURE__*/react.createElement(Pieces, null), /*#__PURE__*/react.createElement(Stats, null));
+	  }, /*#__PURE__*/react.createElement(Board, null), /*#__PURE__*/react.createElement(Pieces, null)), /*#__PURE__*/react.createElement(Buttons, null), /*#__PURE__*/react.createElement(Stats, null));
 	}
 
 	reactDom.render( /*#__PURE__*/react.createElement(App, null), document.querySelector('#root'));

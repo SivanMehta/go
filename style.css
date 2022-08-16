@@ -3,3 +3,16 @@
   stroke: black;
   stroke-width: 1px;
 }
+
+.piece {
+  stroke: black;
+  stroke-width: 1px;
+}
+
+.black {
+  fill: black;
+}
+
+.white {
+  fill: white;
+}
