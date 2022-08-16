@@ -2,16 +2,17 @@ import React from 'react';
 import { SIZE } from './constants';
 import { createContext, useState, useContext }  from 'react';
 
-let turns = new Array(SIZE);
+let pieces = new Array(SIZE);
 for (let i = 0; i < SIZE; i++) {
-  turns[i] = new Array(SIZE);
+  pieces[i] = new Array(SIZE);
 }
 
 const baseGame = {
-  player: 'black',
-  passed: false,
-  over: false,
-  turns,
+  player: 'black', // which player is playing
+  passed: false, // whether or not the previous player passed
+  over: false, // if the game is over (indicates when the score needs to be calculated)
+  hashes: {}, // the hashes of previous boards, do avoid ko
+  pieces, // pieces placed on the board
 }
 
 const Game = createContext(baseGame);
@@ -23,8 +24,6 @@ export default function Wrapper({ children }) {
   function setState(change) {
     set({ ...state, ...change });
   }
-
-  console.log(state);
 
   return (
     <Game.Provider value={[state, setState]}>

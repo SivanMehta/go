@@ -10,8 +10,10 @@ export default function Board() {
     for (let j = 0; j < SIZE; j++) {
       function onClick() {
         if(canBePlaced(state, i, j)) {
+          const [ hashes, pieces ] = addToBoard(state, i, j);
           setState({
-            turns: addToBoard(state, i, j),
+            hashes,
+            pieces,
             player: toggleTurn(state.player),
             passed: false
           });
