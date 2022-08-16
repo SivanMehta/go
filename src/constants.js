@@ -1,27 +1,15 @@
 export const SIZE = 5;
 export const CELL_SIZE = 50;
 
-// memoize the falsey values of canPlace because pieces
-// cannot be un-placed, so it will always be illegal to go there
-const seen = {};
 
 // check if a piece can be placed at a given location
 export function canBePlaced(state, row, col) {
   if(state.over) return false;
-  if([row, col] in seen) return false;
-  let placed = false;
-  for(let i = 0; i < state.turns.length; i++) {
-    if(state.turns[i].row === row && state.turns[i].col === col) {
-      placed = true;
-      break;
-    }
-  }
+  if(state.turns[row][col]) return false;
 
-  if(placed) {
-    seen[[row, col]] = true;
-  }
+  // TODO: check for liberties and/or ko
 
-  return !placed;
+  return true;
 }
 
 export function toggleTurn(color) {
