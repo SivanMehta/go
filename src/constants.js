@@ -5,9 +5,12 @@ export const CELL_SIZE = 50;
 // check if a piece can be placed at a given location
 export function canBePlaced(state, row, col) {
   if(state.over) return false;
-  if(state.turns[row][col]) return false;
+  if(state.pieces[row][col]) return false;
 
-  // TODO: check for liberties and/or ko
+  const copy = JSON.parse(JSON.stringify(state.pieces));
+  copy[row][col] = state.player;
+  const hash = hashBoard({ pieces: copy });
+  if(hash in state.hashes) return false;
 
   return true;
 }
@@ -28,11 +31,17 @@ export function calculateScore({ state }) {
   return { black: 5, white: 5 };
 }
 
+function hashBoard({ pieces }) {
+  return btoa(JSON.stringify(pieces));
+}
+
 // adds a given piece to the board given the current state
 // returns a new state
 // will rearrange board for captures
 // this will assume that canBePlaced has already been evaluated on the given setup
 export function addToBoard(state, row, col) {
-  state.turns[row][col] = state.player;
-  return state.turns;
+  state.pieces[row][col] = state.player;
+  const hash = hashBoard(state);
+  state.hashes[hash] = true;
+  return [state.hashes, state.pieces];
 }

@@ -9,8 +9,8 @@ export default function Pieces() {
 
   for (let i = 0; i < SIZE; i++) {
     for (let j = 0; j < SIZE; j++) {
-      if(state.turns[i][j]) {
-        const player = state.turns[i][j];
+      if(state.pieces[i][j]) {
+        const player = state.pieces[i][j];
         pieces.push(
           <circle
             key={`piece ${i}-${j}`}
