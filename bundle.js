@@ -7675,30 +7675,8 @@
 	}
 	});
 
-	const SIZE = 5;
-	const CELL_SIZE = 50; // memoize the falsey values of canPlace because pieces
-	// cannot be un-placed, so it will always be illegal to go there
-
-	const seen = {}; // check if a piece can be placed at a given location
-
-	function canBePlaced(state, row, col) {
-	  if (state.over) return false;
-	  if ([row, col] in seen) return false;
-	  let placed = false;
-
-	  for (let i = 0; i < state.turns.length; i++) {
-	    if (state.turns[i].row === row && state.turns[i].col === col) {
-	      placed = true;
-	      break;
-	    }
-	  }
-
-	  if (placed) {
-	    seen[[row, col]] = true;
-	  }
-
-	  return !placed;
-	}
+	const SIZE = 8;
+	const CELL_SIZE = 50;
 	function toggleTurn(color) {
 	  if (color === 'black') {
 	    return 'white';
@@ -7716,27 +7694,89 @@
 	    black: 5,
 	    white: 5
 	  };
+	}
+
+	function hashBoard({
+	  pieces
+	}) {
+	  return btoa(JSON.stringify(pieces));
 	} // adds a given piece to the board given the current state
 	// returns a new state
 	// will rearrange board for captures
 	// this will assume that canBePlaced has already been evaluated on the given setup
 
+
 	function addToBoard(state, row, col) {
-	  state.turns[row][col] = state.player;
-	  return state.turns;
+	  state.pieces[row][col] = state.player;
+	  const hash = hashBoard(state);
+	  state.hashes[hash] = true;
+	  return [state.hashes, state.pieces];
+	}
+	const directions = [[0, 1], // right
+	[0, -1], // left
+	[1, 0], // down
+	[-1, 0] // up
+	]; // a spot has liberties if it is adjacent to an empty square or a friendly piece
+
+	function hasLiberties(state, row, col) {
+	  for (let i = 0; i < directions.length; i++) {
+	    // looking at ourselves
+	    const [dx, dy] = directions[i];
+	    if (dx === 0 && dy === 0) continue;
+	    const r = row + dy;
+	    const c = col + dx; // if the spot is out of bounds, we don't care
+
+	    if (r < 0 || r >= SIZE || c < 0 || c >= SIZE) {
+	      continue;
+	    } // if the spot is empty, we have a liberty
+
+
+	    if (!state.pieces[r][c]) {
+	      return true;
+	    } // if the spot is friendly, we have a liberty
+
+
+	    if (state.pieces[r][c] === state.player) {
+	      return true;
+	    }
+	  }
+
+	  return false;
+	} // check if a piece can be placed at a given location
+
+
+	function canBePlaced(state, row, col) {
+	  if (state.over) return false;
+	  if (state.pieces[row][col]) return false; // check for liberties of given pieces
+
+	  const liberated = hasLiberties(state, row, col);
+	  if (!liberated) return false;
+	  const copy = JSON.parse(JSON.stringify(state.pieces));
+	  copy[row][col] = state.player;
+	  const hash = hashBoard({
+	    pieces: copy
+	  });
+	  if (hash in state.hashes) return false;
+	  return true;
 	}
 
-	let turns = new Array(SIZE);
+	let pieces = new Array(SIZE);
 
 	for (let i = 0; i < SIZE; i++) {
-	  turns[i] = new Array(SIZE);
+	  pieces[i] = new Array(SIZE);
 	}
 
 	const baseGame = {
 	  player: 'black',
+	  // which player is playing
 	  passed: false,
+	  // whether or not the previous player passed
 	  over: false,
-	  turns
+	  // if the game is over (indicates when the score needs to be calculated)
+	  hashes: {},
+	  // the hashes of previous boards, do avoid ko
+	  pieces // pieces placed on the board
+
 	};
 	const Game = /*#__PURE__*/react.createContext(baseGame);
 	const useGame = () => react.useContext(Game);
@@ -7751,7 +7791,6 @@
 	    });
 	  }
 
-	  console.log(state);
 	  return /*#__PURE__*/react.createElement(Game.Provider, {
 	    value: [state, setState]
 	  }, children);
@@ -7765,8 +7804,10 @@
 	    for (let j = 0; j < SIZE; j++) {
 	      function onClick() {
 	        if (canBePlaced(state, i, j)) {
+	          const [hashes, pieces] = addToBoard(state, i, j);
 	          setState({
-	            turns: addToBoard(state, i, j),
+	            hashes,
+	            pieces,
 	            player: toggleTurn(state.player),
 	            passed: false
 	          });
@@ -7794,8 +7835,8 @@
 
 	  for (let i = 0; i < SIZE; i++) {
 	    for (let j = 0; j < SIZE; j++) {
-	      if (state.turns[i][j]) {
-	        const player = state.turns[i][j];
+	      if (state.pieces[i][j]) {
+	        const player = state.pieces[i][j];
 	        pieces.push( /*#__PURE__*/react.createElement("circle", {
 	          key: `piece ${i}-${j}`,
 	          className: `piece ${player}`,
