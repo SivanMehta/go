@@ -17,8 +17,20 @@ export function calculateScore({ state }) {
   return { black: 5, white: 5 };
 }
 
+
+// http://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
+ function hashCode(str) {
+  let hash = 0;
+  for (let i = 0, len = str.length; i < len; i++) {
+      let chr = str.charCodeAt(i);
+      hash = (hash << 5) - hash + chr;
+      hash |= 0; // Convert to 32bit integer
+  }
+  return hash;
+}
+
 function hashBoard({ pieces }) {
-  return btoa(JSON.stringify(pieces));
+  return hashCode(JSON.stringify(pieces));
 }
 
 const directions = [
@@ -89,4 +101,5 @@ export function canBePlaced(state, row, col) {
   
 
   return true;
+
 }
