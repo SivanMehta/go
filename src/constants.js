@@ -68,6 +68,13 @@ function hasLiberties(state, row, col) {
 
 function place(board, row, col, player) {
   // resolve captures
+  // check for any adjacent opposing pieces
+  // isolate the boundaries of adjacent opposing pieces
+  // see if the given row, col completes any of the boundaries
+  // if so, remove the pieces inside that boundary
+  // boundary is the (up, down, left, right) of each cell in a continuous area, excluding friendly pieces
+  // "completes" any boundary means that the boundary is missing only one cell and the given (row, col) is in that missing cell
+
 
   board[row][col] = player;
   return board;
